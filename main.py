@@ -19,7 +19,9 @@ country_timezones = {
 
 @app.get("/time/{iso_code}")
 def get_date(iso_code: str):
-   iso_code = iso_code.upper()
-   timezone = country_timezones.get(iso_code)
-   tz = zoneinfo.ZoneInfo(timezone)
-   return {"time": datetime.now(tz)}
+    iso_code = iso_code.upper()
+    timezone = country_timezones.get(iso_code)
+    if not timezone:
+        return {"error": "Invalid ISO code"}
+    tz = zoneinfo.ZoneInfo(timezone)
+    return {"time": datetime.now(tz)}
