@@ -2,26 +2,14 @@ import zoneinfo
 from datetime import datetime
 
 from fastapi import FastAPI
-from pydantic import BaseModel
+
+from models import Customer, country_timezones
 
 app = FastAPI()
 
 @app.get("/")
 async def root():
    return {"message": "Hello, World"}
-
-class Customer(BaseModel):
-   full_name: str
-   description: str | None
-   email: str
-   age: int
-
-
-country_timezones = {
-   "CO": "America/Bogota",
-   "EC": "America/Guayaquil",
-   "PE": "America/Lima",
-}
 
 
 @app.get("/time/{iso_code}")
