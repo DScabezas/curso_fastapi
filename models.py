@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
-class CustomerBase(BaseModel):
+class CustomerBase(SQLModel):
     full_name: str
-    description: str | None
+    description: Optional[str] = None
     email: str
     age: int
 
@@ -14,21 +14,25 @@ class CustomerCreate(CustomerBase):
     pass
 
 
-class Customer(CustomerBase):
-    id: int | None = None
+class Customer(CustomerBase, table=True):
+    id: Optional[int] = Field(primary_key=True)
+    invoices: List["Invoice"] = Relationship(back_populates="customer")
 
 
-class Transaction(BaseModel):
-    id: int
+class Transaction(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     amount: int
     description: str
+    invoice_id: Optional[int] = Field(foreign_key="invoice.id")
+    invoice: Optional["Invoice"] = Relationship(back_populates="transactions")
 
 
-class Invoice(BaseModel):
-    id: int
-    customer: Customer
-    transaction: List[Transaction]
+class Invoice(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    customer_id: Optional[int] = Field(foreign_key="customer.id")
+    customer: Optional[Customer] = Relationship(back_populates="invoices")
+    transactions: List[Transaction] = Relationship(back_populates="invoice")
 
     @property
-    def ammount_total(self):
-        return sum(transaction.ammount for transaction in self.transaction)
+    def amount_total(self):
+        return sum(t.amount for t in self.transactions)
