@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 
-from db import SessionDep
+from db import SessionDep, create_all_tables
 from models import Customer, CustomerCreate, Invoice, Transaction
 
-app = FastAPI()
+app = FastAPI(lifespan=create_all_tables)
 
 
 @app.get("/")
