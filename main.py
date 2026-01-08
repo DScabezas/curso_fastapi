@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, status
 from sqlmodel import select
 
 from db import SessionDep, create_all_tables
-from models import Customer, CustomerCreate, Invoice, Transaction
+from models import Customer, CustomerCreate, CustomerUpdate, Invoice, Transaction
 
 app = FastAPI(lifespan=create_all_tables)
 
@@ -23,13 +23,35 @@ async def create_customer(customer_data: CustomerCreate, session: SessionDep):
     return customer
 
 
-@app.get("/customer/{customer_id}")
+@app.get("/customer/{customer_id}", response_model=Customer)
 async def read_customer(customer_id: int, session: SessionDep):
     customer_db = session.get(Customer, customer_id)
     if not customer_db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
         )
+    return customer_db
+
+
+@app.patch(
+    "/customer/{customer_id}",
+    response_model=Customer,
+    status_code=status.HTTP_201_CREATED,
+)
+async def update_customer(
+    customer_id: int, customer_data: CustomerUpdate, session: SessionDep
+):
+    customer_db = session.get(Customer, customer_id)
+    if not customer_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+        )
+
+    customer_data_dict = customer_data.model_dump(exclude_unset=True)
+    customer_db.sqlmodel_update(customer_data_dict)
+    session.add(customer_db)
+    session.commit()
+    session.refresh(customer_db)
     return customer_db
 
 
