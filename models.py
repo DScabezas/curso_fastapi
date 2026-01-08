@@ -15,12 +15,12 @@ class CustomerCreate(CustomerBase):
 
 
 class Customer(CustomerBase, table=True):
-    id: Optional[int] = Field(primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     invoices: List["Invoice"] = Relationship(back_populates="customer")
 
 
 class Transaction(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     amount: int
     description: str
     invoice_id: Optional[int] = Field(foreign_key="invoice.id")
@@ -28,7 +28,7 @@ class Transaction(SQLModel, table=True):
 
 
 class Invoice(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     customer_id: Optional[int] = Field(foreign_key="customer.id")
     customer: Optional[Customer] = Relationship(back_populates="invoices")
     transactions: List[Transaction] = Relationship(back_populates="invoice")
