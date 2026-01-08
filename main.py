@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from models import CustomerCreate, Invoice, Transaction
+from models import Customer, CustomerCreate, Invoice, Transaction
 
 app = FastAPI()
 
@@ -10,9 +10,20 @@ async def root():
     return {"message": "Hello, World"}
 
 
-@app.post("/customer")
+db_customer: list[Customer] = []
+
+
+@app.post("/customer", response_model=Customer)
 async def create_customer(customer_data: CustomerCreate):
-    return customer_data
+    customer = Customer.model_validate(customer_data.model_dump())
+    customer.id = len(db_customer)
+    db_customer.append(customer)
+    return customer
+
+
+@app.get("/customer")
+async def get_customer():
+    return db_customer
 
 
 @app.post("/transactions")
