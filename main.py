@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from sqlmodel import select
 
 from db import SessionDep, create_all_tables
@@ -21,6 +21,28 @@ async def create_customer(customer_data: CustomerCreate, session: SessionDep):
     session.commit()
     session.refresh(customer)
     return customer
+
+
+@app.get("/customer/{customer_id}")
+async def read_customer(customer_id: int, session: SessionDep):
+    customer_db = session.get(Customer, customer_id)
+    if not customer_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+        )
+    return customer_db
+
+
+@app.delete("/customer/{customer_id}")
+async def delete_customer(customer_id: int, session: SessionDep):
+    customer_db = session.get(Customer, customer_id)
+    if not customer_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+        )
+    session.delete(customer_db)
+    session.commit()
+    return {"detail": "ok"}
 
 
 @app.get("/customer", response_model=List[Customer])
