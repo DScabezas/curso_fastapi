@@ -31,26 +31,45 @@ class InvoiceBase(SQLModel):
     pass
 
 
+class CustomerPlan(SQLModel, table=True):
+    id: int = Field(primary_key=True)
+    plan_id: int = Field(foreign_key="plan.id", primary_key=True)
+    customer_id: int = Field(foreign_key="customer.id", primary_key=True)
+
+
+class Plan(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: Optional[str] = None
+    price: Optional[int] = None
+    description: Optional[str] = None
+    customers: List["Customer"] = Relationship(
+        back_populates="plans", link_model=CustomerPlan
+    )
+
+
 class Customer(CustomerBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     transactions: List["Transaction"] = Relationship(back_populates="customer")
     invoices: List["Invoice"] = Relationship(back_populates="customer")
+    plans: List[Plan] = Relationship(
+        back_populates="customers", link_model=CustomerPlan
+    )
 
 
 class Transaction(TransactionBase, table=True):
-    id: int = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     customer_id: int = Field(foreign_key="customer.id")
+    invoice_id: Optional[int] = Field(default=None, foreign_key="invoice.id")
     customer: Customer = Relationship(back_populates="transactions")
-    invoice_id: int = Field(default=None, foreign_key="invoice.id")
     invoice: Optional["Invoice"] = Relationship(back_populates="transactions")
 
 
 class Invoice(InvoiceBase, table=True):
-    id: int = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     customer_id: int = Field(foreign_key="customer.id")
     customer: Customer = Relationship(back_populates="invoices")
     transactions: List[Transaction] = Relationship(back_populates="invoice")
 
     @property
     def amount_total(self):
-        return sum(t.amount for t in self.transactions)
+        return sum(t.ammount for t in self.transactions)
