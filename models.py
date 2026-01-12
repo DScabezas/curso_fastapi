@@ -18,23 +18,37 @@ class CustomerUpdate(CustomerBase):
     pass
 
 
+class TransactionBase(SQLModel):
+    ammount: int
+    description: str
+
+
+class TransactionCreate(TransactionBase):
+    customer_id: int = Field(foreign_key="customer.id")
+
+
+class InvoiceBase(SQLModel):
+    pass
+
+
 class Customer(CustomerBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    transactions: List["Transaction"] = Relationship(back_populates="customer")
     invoices: List["Invoice"] = Relationship(back_populates="customer")
 
 
-class Transaction(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    amount: int
-    description: str
-    invoice_id: Optional[int] = Field(foreign_key="invoice.id")
+class Transaction(TransactionBase, table=True):
+    id: int = Field(default=None, primary_key=True)
+    customer_id: int = Field(foreign_key="customer.id")
+    customer: Customer = Relationship(back_populates="transactions")
+    invoice_id: int = Field(default=None, foreign_key="invoice.id")
     invoice: Optional["Invoice"] = Relationship(back_populates="transactions")
 
 
-class Invoice(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    customer_id: Optional[int] = Field(foreign_key="customer.id")
-    customer: Optional[Customer] = Relationship(back_populates="invoices")
+class Invoice(InvoiceBase, table=True):
+    id: int = Field(default=None, primary_key=True)
+    customer_id: int = Field(foreign_key="customer.id")
+    customer: Customer = Relationship(back_populates="invoices")
     transactions: List[Transaction] = Relationship(back_populates="invoice")
 
     @property
