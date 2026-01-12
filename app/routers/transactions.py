@@ -7,12 +7,17 @@ from models import Customer, Transaction, TransactionCreate
 router = APIRouter(tags=["Transactions"])
 
 
-@router.post("/transactions")
-async def create_transaction(transaction_data: TransactionCreate, session: SessionDep):
+@router.post("/transactions", status_code=status.HTTP_201_CREATED)
+async def create_transaction(
+    transaction_data: TransactionCreate,
+    session: SessionDep,
+):
     transaction_data_dict = transaction_data.model_dump()
     customer = session.get(Customer, transaction_data_dict.get("customer_id"))
     if not customer:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer does not exist"
+        )
     transaction_db = Transaction.model_validate(transaction_data)
     session.add(transaction_db)
     session.commit()
