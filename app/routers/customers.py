@@ -1,12 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter
-from sqlmodel import HTTPException, select, status
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
-from ..db import SessionDep
-from ..models import Customer, CustomerCreate, CustomerUpdate
+from db import SessionDep
+from models import Customer, CustomerCreate, CustomerUpdate
 
-router = APIRouter(tags="Customers")
+router = APIRouter(tags=["Customers"])
 
 
 @router.get("/customer", response_model=List[Customer])
