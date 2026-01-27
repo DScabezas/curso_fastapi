@@ -32,13 +32,13 @@ class InvoiceBase(SQLModel):
 
 
 class CustomerPlan(SQLModel, table=True):
-    id: int = Field(primary_key=True)
-    plan_id: int = Field(foreign_key="plan.id", primary_key=True)
-    customer_id: int = Field(foreign_key="customer.id", primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
+    customer_id: int = Field(foreign_key="customer.id")
+    plan_id: int = Field(foreign_key="plan.id")
 
 
 class Plan(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: Optional[str] = None
     price: Optional[int] = None
     description: Optional[str] = None
@@ -48,7 +48,7 @@ class Plan(SQLModel, table=True):
 
 
 class Customer(CustomerBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     transactions: List["Transaction"] = Relationship(back_populates="customer")
     invoices: List["Invoice"] = Relationship(back_populates="customer")
     plans: List[Plan] = Relationship(
